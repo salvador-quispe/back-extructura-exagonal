@@ -1,0 +1,19 @@
+# =====================================================================
+# Service tipo NodePort: expone el Deployment fuera del cluster.
+# Renombra el archivo y "name" por tu propio nombre: tunombre-service.yml
+# Acceso: http://localhost:<nodePort>/v1/api/student
+# Aplicar: kubectl apply -f k8s/salvador-service.yml
+# =====================================================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: salvador-service
+  namespace: salvador-namespace
+spec:
+  type: NodePort
+  selector:
+    app: student-service
+  ports:
+    - port: 80              # puerto del Service dentro del cluster
+      targetPort: 8093       # puerto del contenedor (el mismo del Deployment)
+      nodePort: 30093        # puerto expuesto en tu maquina (rango valido: 30000-32767)

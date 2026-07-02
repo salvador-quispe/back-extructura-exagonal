@@ -1,0 +1,87 @@
+# =====================================================================
+#  CONFIGURACION PRINCIPAL
+#  Puerto flexible por variable de entorno SERVER_PORT (default 8090).
+#  Perfil activo por variable SPRING_PROFILES_ACTIVE (default: h2 / local).
+#  Ver docs/CUSTOMIZE.md para la lista completa de variables.
+# =====================================================================
+server:
+  port: ${SERVER_PORT:8090}
+
+spring:
+  application:
+    name: student-service
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:h2}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+
+logging:
+  level:
+    root: INFO
+    pe.edu.vallegrande.student: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+---
+# ---------------- PERFIL H2 (por defecto, ideal para dev/hackaton) ----------------
+spring:
+  config:
+    activate:
+      on-profile: h2
+  datasource:
+    url: jdbc:h2:mem:studentdb;DB_CLOSE_DELAY=-1
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    database-platform: org.hibernate.dialect.H2Dialect
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+---
+# ---------------- PERFIL MYSQL (usado en docker-compose / produccion) ----------------
+spring:
+  config:
+    activate:
+      on-profile: mysql
+  datasource:
+    url: jdbc:mysql://${DB_HOST:mysql}:${DB_PORT:3306}/${DB_NAME:studentdb}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD:root}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    database-platform: org.hibernate.dialect.MySQLDialect
+
+---
+# ---------------- PERFIL POSTGRES (para Render / Railway / Koyeb) ----------------
+# Activar con SPRING_PROFILES_ACTIVE=postgres y las variables DATABASE_URL/DB_USER/DB_PASSWORD
+# que la plataforma cloud te entregue. Ver docs/DEPLOY.md
+spring:
+  config:
+    activate:
+      on-profile: postgres
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/studentdb}
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    database-platform: org.hibernate.dialect.PostgreSQLDialect

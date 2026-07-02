@@ -1,0 +1,11 @@
+# =====================================================================
+# Namespace de trabajo en Kubernetes.
+# Renombra el archivo y el "name" por tu propio nombre: tunombre-namespace.yml
+# Aplicar: kubectl apply -f k8s/salvador-namespace.yml
+# =====================================================================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: salvador-namespace
+  labels:
+    owner: salvador

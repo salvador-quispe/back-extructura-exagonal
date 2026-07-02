@@ -1,0 +1,54 @@
+# =====================================================================
+# Deployment: 3 replicas del microservicio, puerto de contenedor 8093.
+# Renombra el archivo y "name"/"labels" por tu propio nombre: tunombre-deployment.yml
+# El "image" debe apuntar a la imagen que subiste a Docker Hub (ver docs/DOCKER.md).
+# Aplicar: kubectl apply -f k8s/salvador-deployment.yml
+# =====================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: salvador-deployment
+  namespace: salvador-namespace
+  labels:
+    app: student-service
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: student-service
+  template:
+    metadata:
+      labels:
+        app: student-service
+    spec:
+      containers:
+        - name: student-service
+          # CAMBIA esto por tu imagen de Docker Hub:
+          # usuariodockerhub/ht-232-01-nombre-apellido:latest
+          image: usuariodockerhub/ht-232-01-nombre-apellido:latest
+          ports:
+            - containerPort: 8093
+          env:
+            - name: SERVER_PORT
+              value: "8093"
+            - name: SPRING_PROFILES_ACTIVE
+              value: "h2"
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8093
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8093
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "256Mi"

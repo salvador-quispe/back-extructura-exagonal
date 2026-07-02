@@ -1,0 +1,30 @@
+# =====================================================================
+# ALTERNATIVA "de emergencia" si el build nativo (Dockerfile principal)
+# te da problemas durante el hackaton.
+#
+# NO usa "scratch" (por eso no cumple el punto extra al 100%), pero:
+#   - Sigue siendo multistage
+#   - Sigue corriendo como usuario NO ROOT
+#   - Es mucho mas rapido y confiable de construir (JAR normal + JRE)
+#
+# Uso: docker build -f Dockerfile.distroless-fallback -t mi-imagen .
+# =====================================================================
+
+# ---------- STAGE 1: build del JAR ----------
+FROM maven:3.9-eclipse-temurin-17 AS build
+WORKDIR /workspace
+COPY pom.xml .
+RUN mvn -q -B dependency:go-offline || true
+COPY src src
+RUN mvn -q -B -DskipTests package
+
+# ---------- STAGE 2: runtime minimo, sin root ----------
+FROM gcr.io/distroless/java17-debian12:nonroot
+
+WORKDIR /app
+COPY --from=build --chown=nonroot:nonroot /workspace/target/app.jar /app/app.jar
+
+ENV SERVER_PORT=8091
+EXPOSE 8091
+
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]

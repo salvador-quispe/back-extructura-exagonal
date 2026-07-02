@@ -1,0 +1,65 @@
+# =====================================================================
+# 3 servicios: app (8091), mysql (3306), nginx (8092)
+# Uso:
+#   docker compose up -d --build
+#   docker compose ps            -> los 3 deben quedar "Up"
+#   curl http://localhost:8092/v1/api/student   (via nginx -> app)
+#   curl http://localhost:8091/v1/api/student   (directo a la app)
+# =====================================================================
+version: "3.9"
+
+services:
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      # Si el build nativo te da problemas, usa:
+      # dockerfile: Dockerfile.distroless-fallback
+    image: ${DOCKERHUB_USER:-usuariodockerhub}/ht-${PROMOTION:-232}-${NUM:-01}-${NOMBRE:-nombre}-${APELLIDO:-apellido}
+    container_name: student-app
+    restart: unless-stopped
+    environment:
+      SERVER_PORT: 8091
+      SPRING_PROFILES_ACTIVE: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: studentdb
+      DB_USER: root
+      DB_PASSWORD: root
+    ports:
+      - "8091:8091"
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  mysql:
+    image: mysql:8.0
+    container_name: student-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: studentdb
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: student-nginx
+    restart: unless-stopped
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "8092:80"
+    depends_on:
+      - app
+
+volumes:
+  mysql_data:
