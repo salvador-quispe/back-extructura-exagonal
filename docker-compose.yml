@@ -1,10 +1,11 @@
 # =====================================================================
-# 3 servicios: app (8091), mysql (3306), nginx (8092)
+# 4 servicios: app (8091), mysql (3306), nginx (8092), frontend (8095)
 # Uso:
 #   docker compose up -d --build
-#   docker compose ps            -> los 3 deben quedar "Up"
+#   docker compose ps            -> los 4 deben quedar "Up"
 #   curl http://localhost:8092/v1/api/student   (via nginx -> app)
 #   curl http://localhost:8091/v1/api/student   (directo a la app)
+#   abrir  http://localhost:8095                (frontend CRUD)
 # =====================================================================
 version: "3.9"
 
@@ -58,6 +59,23 @@ services:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
     ports:
       - "8092:80"
+    depends_on:
+      - app
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: student-frontend
+    restart: unless-stopped
+    environment:
+      # Cambia esto para apuntar el frontend a CUALQUIER backend
+      # (el propio de este repo, o cualquiera de tus otros 2 backends).
+      API_BASE_URL: ${FRONTEND_API_BASE_URL:-http://localhost:8092/v1/api/student}
+      ID_FIELD: ${FRONTEND_ID_FIELD:-dni}
+      APP_TITLE: ${FRONTEND_APP_TITLE:-CRUD Student}
+    ports:
+      - "8095:80"
     depends_on:
       - app
 

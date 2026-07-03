@@ -1,0 +1,13 @@
+{
+  "apiBaseUrl": "${API_BASE_URL}",
+  "idField": "${ID_FIELD}",
+  "appTitle": "${APP_TITLE}",
+
+  "fields": [
+    { "key": "dni", "label": "DNI", "type": "text", "required": true, "editable": false, "showInTable": true },
+    { "key": "firstName", "label": "Nombres", "type": "text", "required": true, "editable": true, "showInTable": true },
+    { "key": "lastName", "label": "Apellidos", "type": "text", "required": true, "editable": true, "showInTable": true },
+    { "key": "promotion", "label": "Promocion", "type": "number", "required": true, "editable": true, "showInTable": true },
+    { "key": "date", "label": "Fecha", "type": "text", "required": false, "editable": false, "showInTable": true }
+  ]
+}

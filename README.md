@@ -22,12 +22,23 @@ cambia (ver `docs/CUSTOMIZE.md`).
 ├── docker-compose.yml             app (8091) + mysql (3306) + nginx (8092)
 ├── nginx/nginx.conf
 ├── k8s/                           namespace + deployment (3 replicas, 8093) + service NodePort
+├── frontend/                      App Angular 18 generica de CRUD (ver docs/FRONTEND.md)
+│   ├── public/config.json         URL del backend + campos del formulario (runtime, sin rebuild)
+│   ├── src/app/core/               ConfigService + CrudService (HTTP generico)
+│   └── Dockerfile                 Multistage: build Angular -> nginx
 └── docs/
-    ├── CUSTOMIZE.md               Como cambiar el recurso, campos, BD, puertos
+    ├── COMO-FUNCIONA.md           Mapa general: que pieza hace que, y a donde ir
+    ├── PUERTOS.md                 Tabla unica de TODOS los puertos del proyecto
+    ├── CUSTOMIZE.md               Como cambiar el recurso, campos, BD
     ├── DOCKER.md                  Build de la imagen, Docker Compose, Docker Hub
     ├── KUBERNETES.md              Namespace/Deployment/Service, port-forward
-    └── DEPLOY.md                  Publicar en Render/Railway/Koyeb con Postgres
+    ├── DEPLOY.md                  Publicar en Render/Railway/Koyeb con Postgres
+    ├── FRONTEND.md                Conectar el frontend a CUALQUIER backend, cambiar campos
+    └── PIPELINES.md               CORS, comandos y pipelines CI/CD (GitHub Actions, Docker Hub, K8s)
 ```
+
+**Si no sabes por donde empezar**, lee `docs/COMO-FUNCIONA.md` primero — es
+el mapa que te manda al archivo correcto segun lo que necesites cambiar.
 
 ## Endpoints
 
@@ -69,10 +80,22 @@ Abrir: `http://localhost:8090/v1/api/student`
 Consola H2 (mientras el perfil `h2` este activo): `http://localhost:8090/h2-console`
 (JDBC URL: `jdbc:h2:mem:studentdb`, user `sa`, password vacio).
 
+## Frontend (Angular, generico para cualquier backend)
+
+```bash
+cd frontend
+npm install
+npm start        # http://localhost:4200
+```
+Edita `frontend/public/config.json` para apuntarlo a este backend o a
+cualquiera de tus otros 2 backends, y para definir los campos del CRUD.
+Ver `docs/FRONTEND.md`.
+
 ## Docker / Docker Compose / Kubernetes / Deploy
 
 Ver `docs/DOCKER.md`, `docs/KUBERNETES.md` y `docs/DEPLOY.md` — cada uno
-explica paso a paso que archivo tocar y donde.
+explica paso a paso que archivo tocar y donde. `docker compose up -d --build`
+levanta backend + mysql + nginx + frontend juntos (puertos 8091/3306/8092/8095).
 
 ## Adaptar este proyecto a otro backend del hackaton
 
